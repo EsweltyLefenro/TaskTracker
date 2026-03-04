@@ -1,0 +1,69 @@
+﻿@page
+@model TaskTracker.Web.Pages.Tasks.IndexModel
+@{
+    ViewData["Title"] = "Tasks";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h2>Задачи</h2>
+    <a class="btn btn-success" asp-page="Create">+ Создать</a>
+</div>
+
+@if (!Model.Tasks.Any())
+{
+    <div class="alert alert-info">Пока задач нет. Самое время добавить первую 🙂</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Приоритет</th>
+                <th>Дедлайн</th>
+                <th>Статус</th>
+                <th class="text-end">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Model.Tasks)
+            {
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@t.Title</div>
+                        @if (!string.IsNullOrWhiteSpace(t.Description))
+                        {
+                            <div class="text-muted small">@t.Description</div>
+                        }
+                    </td>
+                    <td>@t.Priority</td>
+                    <td>@(t.DueDate.HasValue? t.DueDate.Value.ToString("yyyy-MM-dd") : "—")</td>
+                    <td>
+                        @if (t.IsDone)
+                        {
+                            <span class="badge bg-success">Готово</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">В процессе</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <form method="post" class="d-inline" asp-page-handler="ToggleDone">
+                            <input type="hidden" name="id" value="@t.Id" />
+                            <button class="btn btn-sm btn-outline-primary" type="submit">
+                                @(t.IsDone ? "Вернуть" : "Сделано")
+                            </button>
+                        </form>
+
+                        <form method="post" class="d-inline" asp-page-handler="Delete"
+                              onsubmit="return confirm('Удалить задачу?');">
+                            <input type="hidden" name="id" value="@t.Id" />
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

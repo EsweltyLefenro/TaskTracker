@@ -1,0 +1,40 @@
+﻿@page
+@model TaskTracker.Web.Pages.Tasks.CreateModel
+@{
+    ViewData["Title"] = "Create Task";
+}
+
+<h2>Создать задачу</h2>
+
+<form method="post" class="mt-3">
+    <div class="mb-3">
+        <label class="form-label" asp-for="Task.Title"></label>
+        <input class="form-control" asp-for="Task.Title" />
+        <span class="text-danger" asp-validation-for="Task.Title"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="Task.Description"></label>
+        <textarea class="form-control" asp-for="Task.Description" rows="3"></textarea>
+        <span class="text-danger" asp-validation-for="Task.Description"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="Task.Priority"></label>
+        <input class="form-control" asp-for="Task.Priority" type="number" min="1" max="5" />
+        <span class="text-danger" asp-validation-for="Task.Priority"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="Task.DueDate">Дедлайн (необязательно)</label>
+        <input class="form-control" asp-for="Task.DueDate" type="date" />
+        <span class="text-danger" asp-validation-for="Task.DueDate"></span>
+    </div>
+
+    <button class="btn btn-success" type="submit">Создать</button>
+    <a class="btn btn-secondary" asp-page="Index">Отмена</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

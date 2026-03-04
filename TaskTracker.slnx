@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Элементы решения/">
+    <File Path=".dockerignore" />
+    <File Path=".env" />
+    <File Path=".gitignore" />
+    <File Path="docker-compose.dev.yml" />
+    <File Path="docker-compose.lab2.yml" />
+  </Folder>
+  <Project Path="TaskTracker.Web.Tests/TaskTracker.Web.Tests.csproj" />
+  <Project Path="TaskTracker.Web/TaskTracker.Web.csproj" />
+</Solution>
