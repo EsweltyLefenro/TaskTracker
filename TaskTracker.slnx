@@ -5,6 +5,8 @@
     <File Path=".gitignore" />
     <File Path="docker-compose.dev.yml" />
     <File Path="docker-compose.lab2.yml" />
+    <File Path="docker-compose.lab4.yml" />
+    <Project Path="NodeInfo.Web/NodeInfo.Web.csproj" />
   </Folder>
   <Project Path="TaskTracker.Web.Tests/TaskTracker.Web.Tests.csproj" />
   <Project Path="TaskTracker.Web/TaskTracker.Web.csproj" />
