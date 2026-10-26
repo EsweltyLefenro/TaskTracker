@@ -1,119 +1,183 @@
-# TaskTracker
 
-Набор лабораторных работ (Tasks) по дисциплине “Основы новых информационных технологий” специальности "Информатика и вычислительная техника", МГТУ "СТАНКИН".
+# TaskTracker — ASP.NET Core & DevOps Labs
 
-Стек: C#/.NET 10, ASP.NET Core (Razor Pages), EF Core (ORM), PostgreSQL, Docker, GitHub Actions, Nginx (round-robin load balancer).
+**TaskTracker** — набор учебных лабораторных работ по дисциплине «Основы новых информационных технологий» в МГТУ «СТАНКИН» (09.03.01 «Информатика и вычислительная техника»).
 
----
+Проект объединяет разработку веб-приложения, работу с реляционной базой данных, контейнеризацию, автоматизированное тестирование и балансировку нагрузки.
 
-## Содержимое
+## Реализованные лабораторные
 
-* **Task 1**: `TaskTracker.Web` — веб-приложение “Task Tracker” + EF Core ORM + PostgreSQL,
-* **Task 2**: `docker-compose.lab2.yml`, `TaskTracker.Web/Dockerfile`, `.env` — контейнеризация (app и db отдельно),
-* **Task 3**: `.github/workflows/ci.yml`, `TaskTracker.Web.Tests` — CI/CD через GitHub Actions + функциональный тест,
-* **Task 4**: `docker-compose.lab4.yml`, `NodeInfo.Web`, `nginx/nginx.conf` — 3 ноды + Nginx round-robin, переключение "Нода 1/2/3".
+| Этап | Содержание | Технологии |
+|---|---|---|
+| **Task 1** | Веб-приложение для управления задачами | ASP.NET Core, Razor Pages, EF Core, PostgreSQL |
+| **Task 2** | Контейнеризация приложения и базы данных | Docker, Docker Compose |
+| **Task 3** | Автоматизация сборки и тестирования | GitHub Actions, xUnit |
+| **Task 4** | Балансировка нагрузки между тремя узлами | Nginx, Docker Compose |
 
----
+## Функциональность
 
-## Task 1: запуск приложения локально (без контейнеров)
+### Task 1 — Веб-приложение
 
-> Требуется запущенная PostgreSQL (можно и через Docker, см. ниже).
+Реализован небольшой менеджер задач с хранением данных в PostgreSQL.
 
-Запуск из Visual Studio: открыть решение и нажать **Run**.
+Возможности:
 
-Запуск через CLI:
+- Создание задач с названием и описанием.
+- Назначение приоритета от 1 до 5.
+- Установка необязательного срока выполнения.
+- Просмотр и сортировка задач по статусу, приоритету и дедлайну.
+- Отметка задач выполненными и возврат в активное состояние.
+- Удаление задач.
 
-```powershell
-cd TaskTracker.Web
-dotnet run --urls "http://127.0.0.1:5005"
+Для взаимодействия с базой данных используется **Entity Framework Core**, включая миграции схемы PostgreSQL.
+
+### Task 2 — Контейнеризация
+
+Приложение и база данных запускаются в отдельных Docker-контейнерах.
+
+Реализованы:
+
+- Многоэтапная сборка Docker-образа приложения.
+- Настройка взаимодействия ASP.NET Core и PostgreSQL.
+- Передача параметров подключения через переменные окружения.
+- Постоянное хранение данных PostgreSQL в Docker Volume.
+- Проверки работоспособности контейнеров (health checks).
+
+### Task 3 — Continuous Integration
+
+Настроен workflow **GitHub Actions**, выполняющий автоматизированные проверки при изменениях репозитория.
+
+Основные этапы:
+
+1. Восстановление зависимостей .NET.
+2. Сборка проекта.
+3. Запуск тестов xUnit.
+4. Сборка и запуск контейнеров Docker Compose.
+5. HTTP-проверки эндпоинтов `/health` и `/Tasks`.
+
+Для интеграционного тестирования используется `WebApplicationFactory`. Тестовое окружение работает с EF Core InMemory вместо PostgreSQL.
+
+### Task 4 — Load Balancing
+
+Реализована отдельная демонстрация распределения HTTP-запросов с использованием **Nginx**.
+
+Архитектура включает:
+
+- Три экземпляра приложения `NodeInfo.Web`.
+- Отдельные Docker-контейнеры для каждого экземпляра.
+- Nginx в роли обратного прокси и балансировщика нагрузки.
+- Алгоритм распределения запросов **Round-Robin**.
+
+Каждый экземпляр отображает собственный идентификатор (`Node 1`, `Node 2`, `Node 3`), позволяя наблюдать распределение запросов при обновлении страницы.
+
+> **Примечание:** лабораторная с Nginx использует отдельное демонстрационное приложение `NodeInfo.Web`, а не три экземпляра основного менеджера задач.
+
+## Технологический стек
+
+| Технология | Назначение |
+|---|---|
+| C# / .NET 10 | Основной язык и платформа |
+| ASP.NET Core Razor Pages | Серверное веб-приложение |
+| Entity Framework Core | ORM и миграции базы данных |
+| PostgreSQL | Хранение задач |
+| Docker / Docker Compose | Контейнеризация |
+| GitHub Actions | Автоматизация сборки и проверок |
+| xUnit | Автоматизированное тестирование |
+| Nginx | Обратный прокси и балансировка нагрузки |
+
+## Структура репозитория
+
+```text
+TaskTracker/
+├── TaskTracker.Web/          # Веб-приложение и EF Core
+├── TaskTracker.Web.Tests/    # Интеграционные тесты
+├── NodeInfo.Web/             # Демонстрация нескольких узлов
+├── nginx/                    # Конфигурация балансировщика
+├── .github/workflows/        # GitHub Actions
+├── docker-compose.dev.yml
+├── docker-compose.lab2.yml
+└── docker-compose.lab4.yml
 ```
 
-Ссылки:
+## Запуск
 
-* UI: `http://127.0.0.1:5005/Tasks`
-* Health: `http://127.0.0.1:5005/health`
+### Основное приложение (Docker)
 
----
+**Требования:** Docker и Docker Compose.
 
-## Task 2: запуск системы в Docker (Web + DB)
+Клонировать репозиторий:
 
-### 1) Создать `.env` (в корне репозитория)
+```bash
+git clone https://github.com/EsweltyLefenro/TaskTracker.git
+cd TaskTracker
+```
 
-Файл **.env** (не коммитится, должен быть в `.gitignore`):
+Создать файл `.env` в корне репозитория:
 
-```env
+```dotenv
 DB_NAME=tasktracker
 DB_USER=taskuser
-DB_PASSWORD=<ПАРОЛЬ>
-DB_PORT=5432
+DB_PASSWORD=your_password
 DB_HOST=db
-
+DB_PORT=5432
 APP_PORT=8080
 ```
 
-### 2) Запуск
+Собрать и запустить контейнеры:
 
-```powershell
-cd .
+```bash
 docker compose -f docker-compose.lab2.yml --env-file .env up -d --build
-docker ps
 ```
 
-Ссылки:
+После запуска доступны:
 
-* UI: `http://127.0.0.1:8080/Tasks`
-* Health: `http://127.0.0.1:8080/health`
+- **Менеджер задач:** http://127.0.0.1:8080/Tasks
+- **Health endpoint:** http://127.0.0.1:8080/health
 
-Остановка:
+Остановка контейнеров:
 
-```powershell
+```bash
 docker compose -f docker-compose.lab2.yml --env-file .env down
 ```
 
-Остановка с удалением данных БД:
+Для остановки с удалением тома базы данных используется дополнительный флаг `-v`.
 
-```powershell
-docker compose -f docker-compose.lab2.yml --env-file .env down -v
+### Локальный запуск без контейнеризации приложения
+
+Потребуются .NET 10 SDK и запущенная PostgreSQL.
+
+После настройки строки подключения `ConnectionStrings:DefaultConnection`:
+
+```bash
+dotnet run --project TaskTracker.Web/TaskTracker.Web.csproj --urls http://127.0.0.1:5005
 ```
 
----
+Приложение будет доступно по адресу:
 
-## Task 3: CI/CD (GitHub Actions)
+http://127.0.0.1:5005/Tasks
 
-Workflow: `.github/workflows/ci.yml`
+### Демонстрация балансировки Nginx
 
-В CI выполняются:
+Запустить три экземпляра `NodeInfo.Web` и Nginx:
 
-* `dotnet build`
-* `dotnet test` (функциональный тест `/health`)
-* `docker compose up` + проверки `curl` для `/health` и `/Tasks`
-
-Переменные среды из Task 2 вынесены в GitHub **Secrets/Variables**.
-
----
-
-## Task 4: Nginx load balancer + 3 ноды (round-robin)
-
-Композиция:
-
-* `web1`, `web2`, `web3` — экземпляры `NodeInfo.Web` с разным `NODE_ID`
-* `nginx` — балансировщик нагрузки (round-robin upstream)
-
-Запуск:
-
-```powershell
-cd .
+```bash
 docker compose -p lab4 -f docker-compose.lab4.yml up -d --build
-docker ps
 ```
 
-Ссылка:
+Открыть:
 
-* `http://127.0.0.1:8081/`
-  При обновлении страницы должна меняться надпись: **Нода 1 / Нода 2 / Нода 3**.
+http://127.0.0.1:8081/
+
+При последовательных обновлениях страницы будет меняться идентификатор узла, обработавшего запрос.
 
 Остановка:
 
-```powershell
+```bash
 docker compose -p lab4 -f docker-compose.lab4.yml down
 ```
+
+## Статус проекта
+
+Проект разработан в учебных целях для практического освоения **ASP.NET Core, реляционных баз данных, контейнеризации и базовых DevOps-процессов**.
+
+Менеджер задач представляет собой демонстрационное приложение с базовой функциональностью. В текущей реализации отсутствуют аутентификация и разграничение доступа, поэтому проект не предназначен для публичного многопользовательского развёртывания без дополнительной защиты.
